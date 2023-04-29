@@ -1,0 +1,87 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+
+<section
+  class="px-4 sm:px-8 flex flex-col sm:flex-row items-center mt-[500px] flex-wrap gap-6"
+  id="book"
+>
+  <div class="flex-1">
+    <img
+      class="w-full"
+      src="{% static '../static/images/schedule.svg' %}"
+      alt="Schedule"
+    />
+  </div>
+
+  <form class="flex-1 gap-4 w-full">
+    {% csrf_token %}
+    <h3
+      class="font-[Poppins] pb-3 text-2xl sm:text-3xl md:text-5xl text-center"
+    >
+      از اینجا نوبت بگیرید
+    </h3>
+    <div class="flex justify-center mb-3">
+      <select
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl"
+        name="speciality"
+        id="speciality"
+      >
+        <option value="" selected disabled hidden>تخصص</option>
+        >
+      </select>
+    </div>
+    <div class="flex justify-center mb-3">
+      <select
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl text-right"
+        name="doctor"
+        id="doctor"
+      >
+        <option value="" selected disabled hidden>
+          دکتر خود را انتخاب کنید
+        </option>
+      </select>
+    </div>
+    <div class="flex justify-center mb-3">
+      <select
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl"
+        name="doctor-time"
+        id="doctor-time"
+      >
+        <option value="" selected disabled hidden>نوبت های در دسترس</option>
+      </select>
+    </div>
+    <div class="flex justify-center mb-3">
+      <input
+        id="first-name"
+        type="text"
+        placeholder="نام"
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl"
+      />
+    </div>
+    <div class="flex justify-center mb-3">
+      <input
+        id="last-name"
+        type="text"
+        placeholder="نام خانوادگی"
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl"
+      />
+    </div>
+    <div class="flex justify-center mb-3">
+      <input
+        id="phone"
+        type="text"
+        placeholder="شماره همراه"
+        class="font-[Poppins] w-2/3 border solid border-teal-600 p-5 rounded-lg text-sm sm:text-base md:text-3xl"
+      />
+    </div>
+
+    <div class="flex justify-center">
+      <button
+        class="w-2/3 font-[Poppins] mt-6 border-[2px] solid border-teal-700 text-teal-600 shadow-xl text-2xl font-bold py-2 px-5 md:py-4 md:px-10 rounded-xl transition-all duration-300 ease-in-out hover:bg-teal-700 hover:text-white"
+      >
+        ثبت نوبت
+      </button>
+    </div>
+  </form>
+</section>
+
+{% endblock %} {% block head_title %} Home {% endblock %}
