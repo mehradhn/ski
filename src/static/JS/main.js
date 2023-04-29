@@ -1,13 +1,7 @@
-console.log("now say my name");
-
 const specialityDropDown = document.getElementById("speciality");
-
 const doctorDropDown = document.getElementById("doctor");
-
 const doctorTime = document.getElementById("doctor-time");
-
 const csrf = document.getElementsByName("csrfmiddlewaretoken");
-
 const days = [
   "شنبه",
   "یکشنبه",
@@ -20,14 +14,20 @@ const days = [
 const convertNumToDay = (num) => days[num];
 const convertDayToNum = (day) => days.indexOf(day);
 
+// Default text for speciality dropdown
+const defaultSpecialityOption = document.createElement("option");
+defaultSpecialityOption.textContent = "تخصص";
+defaultSpecialityOption.setAttribute("value", "");
+defaultSpecialityOption.setAttribute("disabled", "");
+defaultSpecialityOption.setAttribute("selected", "");
+specialityDropDown.appendChild(defaultSpecialityOption);
+
 $.ajax({
   type: "GET",
   url: "/speciality-json/",
   success: (response) => {
     const specialities = response.data;
-
     specialities.map((speciality) => {
-      // now we want to re-create options for each car and show it
       const option = document.createElement("option");
       option.textContent = speciality.name;
       option.setAttribute("value", speciality.id);
@@ -37,11 +37,18 @@ $.ajax({
   error: (error) => console.log(error),
 });
 
-specialityDropDown.addEventListener("change", (e) => {
+specialityDropDown.addEventListener("click", (e) => {
   const speciality_id = e.target.value;
 
+  // Clear the options from the doctor dropdown
   doctorDropDown.innerHTML = "";
-  doctorDropDown.textContent = "دکتر خود را انتخاب کنید";
+  // Default text for doctor dropdown
+  const defaultDoctorOption = document.createElement("option");
+  defaultDoctorOption.textContent = "دکتر خود را انتخاب کنید";
+  defaultDoctorOption.setAttribute("value", "");
+  defaultDoctorOption.setAttribute("disabled", "");
+  defaultDoctorOption.setAttribute("selected", "");
+  doctorDropDown.appendChild(defaultDoctorOption);
 
   $.ajax({
     type: "GET",
@@ -49,7 +56,6 @@ specialityDropDown.addEventListener("change", (e) => {
     success: (response) => {
       doctors = response.data;
       doctors.map((doctor) => {
-        // console.log(doctor.id);
         const option = document.createElement("option");
         option.textContent = `${doctor.first_name} ${doctor.last_name}`;
         option.setAttribute("value", doctor.id);
@@ -60,21 +66,27 @@ specialityDropDown.addEventListener("change", (e) => {
   });
 });
 
-doctorDropDown.addEventListener("change", (e) => {
+doctorDropDown.addEventListener("click", (e) => {
   const doctor_id = e.target.value;
   console.log(doctor_id);
 
   // Clear the options from the doctorTime select element
   doctorTime.innerHTML = "";
-  doctorTime.textContent = "نوبت های در دسترس";
+
+  // Default text for doctorTime dropdown
+  const defaultTimeOption = document.createElement("option");
+  defaultTimeOption.textContent = "نوبت های در دسترس";
+  defaultTimeOption.setAttribute("value", "");
+  defaultTimeOption.setAttribute("disabled", "");
+  defaultTimeOption.setAttribute("selected", "");
+  doctorTime.appendChild(defaultTimeOption);
 
   $.ajax({
     type: "GET",
     url: `/schedule-json/${+doctor_id}/`,
     success: (response) => {
-      const slots = response.data;
-      console.log(slots);
-      slots?.map((slot) => {
+      const data = response.data;
+      data?.map((slot) => {
         const option = document.createElement("option");
         option.textContent = `${convertNumToDay(
           slot.day_of_week
@@ -93,40 +105,64 @@ doctorDropDown.addEventListener("change", (e) => {
   });
 });
 
+
+
+
+
+
 const createAppointment = () => {
   const speciality = document.querySelector("#speciality").value;
   const doctor = document.querySelector("#doctor").value;
   const doctorTime = document.querySelector("#doctor-time").value;
-  const dayIndex = doctorTime.indexOf(":");
-  const day = doctorTime.slice(0, dayIndex);
-  const time = doctorTime.slice(dayIndex + 1);
+  const day = convertDayToNum(doctorTime.split(": ")[0])
+  const timeParts = doctorTime.split(" - ");
+  const startTime = timeParts[0].split(": ")[1];
+  const endTime = timeParts[1];
   const firstName = document.querySelector("#first-name").value;
   const lastName = document.querySelector("#last-name").value;
   const phone = document.querySelector("#phone").value;
 
-  $.ajax({
-    type: "POST",
-    url: "/create/",
-    data: {
-      csrfmiddlewaretoken: csrf[0].value,
-      doctor: doctor,
-      day: convertDayToNum(day),
-      patient: {
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone,
-      },
-    },
-    success: (response) => {
-      const trackingNumber = response.data.tracking_number;
-      console.log(`Your tracking number is ${trackingNumber}`);
-      // do something with the tracking number, like display it to the user
-    },
-    error: (error) => console.log(error),
-  });
-};
+  const specificTime = {'start_time':startTime, 'end_time':endTime}
 
-document.querySelector("form").addEventListener("submit", function (event) {
+  $.ajax({
+    type:'GET',
+    url:'time-slots-json',
+    success:(response) => {
+      const time_slot = response.data.filter(slot => slot.start_time.substring(0, 5) === specificTime.start_time || slot.end_time.substring(0, 5) === specificTime.end_time)
+      const time_slot_id = time_slot[0].id
+
+      $.ajax({
+        type:'POST',
+        url:'/create/',
+        data:{
+          csrfmiddlewaretoken: csrf[0].value,
+          doctor: doctor,
+          day:+day,
+          time_slot:+time_slot_id,
+          patient: {
+            first_name: firstName,
+            last_name: lastName,
+            phone_number: phone,
+          },
+        },
+        success: (response) => {
+          const trackingNumber = response.data.tracking_number;
+          console.log(`Your tracking number is ${trackingNumber}`);
+          // do something with the tracking number, like display it to the user
+        },
+        error: (error) => console.log(error)
+      })
+      
+    },
+    error:(error) => console.log(error)
+  })
+
+
+  // console.log(speciality, doctor, doctorTime)
+  
+}
+
+document.querySelector("form").addEventListener("submit", (event) => {
   event.preventDefault(); // Prevent the form from submitting normally
   createAppointment(); // Call the createAppointment function
 });

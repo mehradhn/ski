@@ -25,9 +25,7 @@ class DoctorAdmin(admin.ModelAdmin):
 class AppointmentAdmin(admin.ModelAdmin):
     readonly_fields = ('tracking_number',)
     list_display = ('patient', 'doctor', 'day', 'time_slot', 'tracking_number')
-    list_filter = ('doctor', 
-        ('day', JDateFieldListFilter),
-    )
+    list_filter = ('doctor', )
     search_fields = ('patient__first_name', 'patient__last_name', 'doctor__first_name', 'doctor__last_name', 'day')
 
 

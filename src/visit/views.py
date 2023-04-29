@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from .models import Speciality, Doctor, WeeklySchedule, Appointment, Patient, TimeSlot
 from django.views.decorators.csrf import csrf_exempt
+import uuid
+from django.db import transaction
 def main_view(request):
     return render(request, 'pages/home.html', {})
 
@@ -19,6 +21,11 @@ def get_json_doctor_data(request, *args, **kwargs):
     return JsonResponse({'data':obj_models})
 
 
+def get_json_time_slot_data(request):
+    query_sets = list(TimeSlot.objects.values())
+    return JsonResponse({'data':query_sets})
+    
+
 
 
 def get_json_schedule(request, *args, **kwargs):
@@ -34,40 +41,39 @@ def get_json_schedule(request, *args, **kwargs):
 
 
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import uuid
-
 @csrf_exempt
 def create_appointment(request):
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+    if request.method == 'POST':
         doctor_id = request.POST.get('doctor')
         day = request.POST.get('day')
-        patient_first_name = request.POST.get('patient[first_name]')
-        patient_last_name = request.POST.get('patient[last_name]')
-        patient_phone = request.POST.get('patient[phone]')
         time_slot_id = request.POST.get('time_slot')
-        
-        # Check if the time slot exists
-        if not TimeSlot.objects.filter(id=time_slot_id).exists():
-            return JsonResponse({'error': 'Invalid Time Slot ID'}, status=400)
-        
-        # Create a new appointment
-        appointment = Appointment.objects.create(
-            doctor_id=doctor_id,
-            day=day,
-            patient_first_name=patient_first_name,
-            patient_last_name=patient_last_name,
-            patient_phone=patient_phone,
-            time_slot_id=time_slot_id
-        )
-        
-        # Return the appointment tracking number as a JSON response
-        response_data = {
-            'tracking_number': appointment.tracking_number
-        }
-        return JsonResponse(response_data)
-    
-    # Return a 400 Bad Request error if the request is not valid
-    return JsonResponse({'error': 'Invalid Request'}, status=400)
-    
+        first_name = request.POST.get('patient[first_name]')
+        last_name = request.POST.get('patient[last_name]')
+        phone_number = request.POST.get('patient[phone_number]')
+
+        # Perform any additional validation or processing here
+
+        with transaction.atomic():
+            # Create the patient object
+            patient = Patient.objects.create(
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone_number
+            )
+
+            # Create the appointment object and associate it with the patient
+            appointment = Appointment.objects.create(
+                doctor_id=doctor_id,
+                day=day,
+                time_slot_id=time_slot_id,
+                patient=patient
+            )
+
+            # Generate a tracking number
+            tracking_number = appointment.generate_tracking_number()
+
+        # Return a JSON response with the tracking number
+        return JsonResponse({'data': {'tracking_number': tracking_number}})
+
+    # Return an error response for invalid request methods
+    return JsonResponse({'error': 'Invalid request method'})

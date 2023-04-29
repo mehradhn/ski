@@ -7,7 +7,7 @@ import uuid
 from django_jalali.db import models as jmodels
 from django.db import models
 from django.utils import timezone
-
+import random
 class Speciality(models.Model):
     name = models.CharField(max_length=100, verbose_name="نوع تخصص", unique=True)
     
@@ -114,6 +114,9 @@ class WeeklySchedule(models.Model):
         verbose_name = 'برنامه هفتگی'
         verbose_name_plural = 'برنامه هفتگی'
         unique_together = ['doctor', 'day_of_week']
+
+    def __str__(self):
+        return f'{self.doctor}'
         
 
 
@@ -124,7 +127,22 @@ class Appointment(models.Model):
     day = models.PositiveSmallIntegerField(choices=[(i, _(day)) for i, day in enumerate(('Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'))],verbose_name="روز")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="نام بیمار")
     time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, verbose_name="شیفت")
-    tracking_number = models.UUIDField(unique=True, default=uuid.uuid4, editable=False, verbose_name="کد رهگیری")
+    tracking_number = models.PositiveIntegerField(unique=True, blank=True, null=True, editable=False, verbose_name="کد رهگیری")
+
+    def save(self, *args, **kwargs):
+        if not self.tracking_number:
+            # Generate a new tracking number
+            self.tracking_number = self.generate_tracking_number()
+        super().save(*args, **kwargs)
+
+    def generate_tracking_number(self):
+        # Generate a random tracking number within the range of 6 to 8 digits
+        return random.randint(10**5, 10**8 - 1)
+
+    def __str__(self):
+        if self.tracking_number:
+            return str(self.tracking_number)
+        return "Not submitted yet"
 
     class Meta:
         verbose_name = "نوبت"
