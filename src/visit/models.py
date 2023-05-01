@@ -106,17 +106,24 @@ class TimeSlot(models.Model):
 
 
 class WeeklySchedule(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE,verbose_name="دکتر")
     day_of_week = models.PositiveSmallIntegerField(choices=[(i, _(day)) for i, day in enumerate(('Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'))],verbose_name="روز")
     time_slots = models.ManyToManyField(TimeSlot, verbose_name="شیفت")
+    
 
     class Meta:
         verbose_name = 'برنامه هفتگی'
         verbose_name_plural = 'برنامه هفتگی'
-        unique_together = ['doctor', 'day_of_week']
 
     def __str__(self):
         return f'{self.doctor}'
+
+
+
+
+
+
         
 
 

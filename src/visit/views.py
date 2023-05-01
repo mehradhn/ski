@@ -4,6 +4,9 @@ from .models import Speciality, Doctor, WeeklySchedule, Appointment, Patient, Ti
 from django.views.decorators.csrf import csrf_exempt
 import uuid
 from django.db import transaction
+from django.db.models import Q
+import json
+from django.forms.models import model_to_dict
 def main_view(request):
     return render(request, 'pages/home.html', {})
 
@@ -30,12 +33,37 @@ def get_json_time_slot_data(request):
 
 def get_json_schedule(request, *args, **kwargs):
     selected_doctor = kwargs.get('doctor_id')
-    obj_models = list(
-        WeeklySchedule.objects
-        .filter(doctor__id=selected_doctor)
-        .values('doctor', 'day_of_week', 'time_slots__start_time', 'time_slots__end_time')
-    )
-    return JsonResponse({'data': obj_models})
+    weekly_schedules = WeeklySchedule.objects.filter(doctor_id=selected_doctor)
+
+    # Construct a list of dictionaries representing the weekly schedule
+    schedule_list = []
+    for schedule in weekly_schedules:
+        time_slots = schedule.time_slots.all()
+        time_slots_data = [
+            {'start_time': slot.start_time.strftime('%H:%M'), 'end_time': slot.end_time.strftime('%H:%M')} for slot in time_slots
+        ]
+        schedule_data = {
+            'doctor': schedule.doctor_id,
+            'day_of_week': schedule.day_of_week,
+            'time_slots': time_slots_data
+        }
+        schedule_list.append(schedule_data)
+
+    # Check if each time slot is booked
+    for schedule in schedule_list:
+        for time_slot in schedule['time_slots']:
+            is_booked = Appointment.objects.filter(
+                doctor_id=schedule['doctor'],
+                day=schedule['day_of_week'],
+                time_slot__start_time=time_slot['start_time'],
+                time_slot__end_time=time_slot['end_time']
+            ).exists()
+            time_slot['is_booked'] = is_booked
+
+    # Convert the list of dictionaries to JSON
+    json_data = json.dumps(schedule_list)
+
+    return JsonResponse({'data': json_data}, safe=False)
 
 
 
@@ -77,3 +105,5 @@ def create_appointment(request):
 
     # Return an error response for invalid request methods
     return JsonResponse({'error': 'Invalid request method'})
+
+

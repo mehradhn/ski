@@ -37,7 +37,7 @@ $.ajax({
   error: (error) => console.log(error),
 });
 
-specialityDropDown.addEventListener("click", (e) => {
+specialityDropDown.addEventListener("change", (e) => {
   const speciality_id = e.target.value;
 
   // Clear the options from the doctor dropdown
@@ -66,9 +66,9 @@ specialityDropDown.addEventListener("click", (e) => {
   });
 });
 
-doctorDropDown.addEventListener("click", (e) => {
+doctorDropDown.addEventListener("change", (e) => {
   const doctor_id = e.target.value;
-  console.log(doctor_id);
+  // console.log(doctor_id);
 
   // Clear the options from the doctorTime select element
   doctorTime.innerHTML = "";
@@ -85,21 +85,15 @@ doctorDropDown.addEventListener("click", (e) => {
     type: "GET",
     url: `/schedule-json/${+doctor_id}/`,
     success: (response) => {
-      const data = response.data;
-      data?.map((slot) => {
-        const option = document.createElement("option");
-        option.textContent = `${convertNumToDay(
-          slot.day_of_week
-        )}: ${slot.time_slots__start_time.substring(
-          0,
-          slot.time_slots__start_time.lastIndexOf(":")
-        )} - ${slot.time_slots__end_time.substring(
-          0,
-          slot.time_slots__end_time.lastIndexOf(":")
-        )}`;
-        option.setAttribute("value", option.textContent);
+      const schedules = JSON.parse(response.data)
+      console.log(schedules)
+      schedules?.map((schedule) => {
+        if(schedule.time_slots[0].is_booked) return
+        const option = document.createElement("option")
+        option.textContent = `${convertNumToDay(schedule.day_of_week)}: ${schedule.time_slots[0].start_time} - ${schedule.time_slots[0].end_time}`
+        option.setAttribute("value", option.textContent)
         doctorTime.appendChild(option);
-      });
+      })
     },
     error: (error) => console.log(error),
   });
@@ -122,11 +116,27 @@ const createAppointment = () => {
   const lastName = document.querySelector("#last-name").value;
   const phone = document.querySelector("#phone").value;
 
+  let errorMessage = ""
+
+  if (firstName.trim() === '') {
+    errorMessage += 'لطفا اسم خود را وارد کنید<br>';
+  }
+
+  if (lastName.trim() === '') {
+    errorMessage += 'لطفا نام خانوادگی را وارد کنید<br>';
+  }
+
+  if (errorMessage !== '') {
+    // Handle
+    document.querySelector("#error-messages").innerHTML = errorMessage;
+    return; // Stop  execution
+  }
+
   const specificTime = {'start_time':startTime, 'end_time':endTime}
 
   $.ajax({
     type:'GET',
-    url:'time-slots-json',
+    url:'/time-slots-json/',
     success:(response) => {
       const time_slot = response.data.filter(slot => slot.start_time.substring(0, 5) === specificTime.start_time || slot.end_time.substring(0, 5) === specificTime.end_time)
       const time_slot_id = time_slot[0].id
@@ -149,6 +159,12 @@ const createAppointment = () => {
           const trackingNumber = response.data.tracking_number;
           console.log(`Your tracking number is ${trackingNumber}`);
           // do something with the tracking number, like display it to the user
+          document.querySelector("#speciality").value = "";
+          document.querySelector("#doctor").value = "";
+          document.querySelector("#doctor-time").value = "";
+          document.querySelector("#first-name").value = "";
+          document.querySelector("#last-name").value = "";
+          document.querySelector("#phone").value = "";
         },
         error: (error) => console.log(error)
       })
@@ -166,3 +182,22 @@ document.querySelector("form").addEventListener("submit", (event) => {
   event.preventDefault(); // Prevent the form from submitting normally
   createAppointment(); // Call the createAppointment function
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
