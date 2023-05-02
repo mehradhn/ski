@@ -116,21 +116,6 @@ const createAppointment = () => {
   const lastName = document.querySelector("#last-name").value;
   const phone = document.querySelector("#phone").value;
 
-  let errorMessage = ""
-
-  if (firstName.trim() === '') {
-    errorMessage += 'لطفا اسم خود را وارد کنید<br>';
-  }
-
-  if (lastName.trim() === '') {
-    errorMessage += 'لطفا نام خانوادگی را وارد کنید<br>';
-  }
-
-  if (errorMessage !== '') {
-    // Handle
-    document.querySelector("#error-messages").innerHTML = errorMessage;
-    return; // Stop  execution
-  }
 
   const specificTime = {'start_time':startTime, 'end_time':endTime}
 

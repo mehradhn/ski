@@ -7,6 +7,10 @@ from django.db import transaction
 from django.db.models import Q
 import json
 from django.forms.models import model_to_dict
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.htpp import HttpResponse
+import datetime
 def main_view(request):
     return render(request, 'pages/home.html', {})
 
@@ -107,3 +111,23 @@ def create_appointment(request):
     return JsonResponse({'error': 'Invalid request method'})
 
 
+
+
+def export_pdf(request):
+    # at first we define a response
+    response = HttpResponse(content_type = "apllication/pdf")
+    response["content-Disposition"] =\
+                    'attachment;filename=Doctors'+ \
+                    str(datetime.datetime.now())+'.pdf'
+
+    template_path = "pdf/all_doctors.html"
+    template = get_template(template_path)
+
+    schedules = WeeklySchedule.objects.all()
+    context = {"schedules": schedules}
+    # Now templates render this context and return .html
+    html = template.render(context)
+
+    # now we send html to xhtml2pdf to create pdf file
+    pisa.CreatePDF(html, dest=response)
+    return response
