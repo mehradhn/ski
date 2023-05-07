@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta>
+    <title>Weekly Schedules</title>
+</head>
+<body>
+    <h1>Weekly Schedules</h1>
+    {% for weekly_schedule in weekly_schedules %}
+        <h2>Doctor: {{ weekly_schedule.doctor.first_name }} {{ weekly_schedule.doctor.last_name }}</h2>
+        <p>Day of Week: {{ weekly_schedule.get_day_of_week_display }}</p>
+        <hr>
+    {% endfor %}
+</body>
+</html>

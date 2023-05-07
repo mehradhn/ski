@@ -8,5 +8,7 @@ urlpatterns= [
     path('speciality-json/', views.get_json_speciality_data, name="speciality-json"),
     path('doctor-json/<int:speciality_id>/', views.get_json_doctor_data, name="doctor-json"),
     path('schedule-json/<int:doctor_id>/', views.get_json_schedule, name="schedule-json"),
-    path('create/', views.create_appointment, name="create")
+    path('create/', views.create_appointment, name="create"),
+    path('schedules/', views.get_json_schedule_data, name="schedules"),
 ]
+
