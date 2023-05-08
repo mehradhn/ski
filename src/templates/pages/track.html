@@ -1,0 +1,10 @@
+{% extends 'base.html' %} {% load static %} {% block content %}
+<section class="min-h-full flex justify-center items-center bg-green-100">
+    <div class="flex flex-col gap-3">
+        <div class="flex gap-3 flex-col sm:flex-row">
+            <input type="text" placeholder="کد رهگیری را وارد کنید" class="p-5 text-2xl" id="track-number-client">
+            <button id="search-btn" type="button" class="font-[Poppins] border-[2px] solid border-teal-700 text-2xl text-teal-600 shadow-xl p-4 rounded-lg font-bold transition-all duration-300 ease-in-out hover:bg-teal-700 hover:text-white">جستوجو</button>
+        </div>
+    </div>
+</section>
+{% endblock %} {% block head_title %} پیگیری {% endblock %}

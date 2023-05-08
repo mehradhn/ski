@@ -12,6 +12,11 @@ def main_view(request):
     return render(request, 'pages/home.html', {})
 
 
+def get_json_appointments_data(request):
+    query_set = Appointment.objects.values()
+    data = list(query_set)
+    return JsonResponse({'data':data})
+
 
 
 def get_json_schedule_data(request):
@@ -116,3 +121,12 @@ def create_appointment(request):
 
 
 
+def track_number(request):
+    return render(request, 'pages/track.html', {})
+
+
+
+
+
+
+ 

@@ -15,6 +15,9 @@ const convertNumToDay = (num) => days[num];
 const convertDayToNum = (day) => days.indexOf(day);
 
 // Default text for speciality dropdown
+const currentUrl = window.location.href
+if (currentUrl.includes("home")){
+
 const defaultSpecialityOption = document.createElement("option");
 defaultSpecialityOption.textContent = "تخصص";
 defaultSpecialityOption.setAttribute("value", "");
@@ -86,7 +89,7 @@ doctorDropDown.addEventListener("change", (e) => {
     url: `/schedule-json/${+doctor_id}/`,
     success: (response) => {
       const schedules = JSON.parse(response.data)
-      console.log(schedules)
+      // console.log(schedules)
       schedules?.map((schedule) => {
         if(schedule.time_slots[0].is_booked) return
         const option = document.createElement("option")
@@ -125,7 +128,7 @@ const createAppointment = () => {
     success:(response) => {
       const time_slot = response.data.filter(slot => slot.start_time.substring(0, 5) === specificTime.start_time || slot.end_time.substring(0, 5) === specificTime.end_time)
       const time_slot_id = time_slot[0].id
-
+      if(!speciality || !doctor ||!doctorTime || !firstName || !lastName || !phone) return alert("لطفا همه فیلد هارو پر کنید")
       $.ajax({
         type:'POST',
         url:'/create/',
@@ -142,7 +145,7 @@ const createAppointment = () => {
         },
         success: (response) => {
           const trackingNumber = response.data.tracking_number;
-          console.log(`Your tracking number is ${trackingNumber}`);
+          alert(`کد رهگیری شما ${trackingNumber}`);
           // do something with the tracking number, like display it to the user
           document.querySelector("#speciality").value = "";
           document.querySelector("#doctor").value = "";
@@ -168,10 +171,12 @@ document.querySelector("form").addEventListener("submit", (event) => {
   createAppointment(); // Call the createAppointment function
 });
 
+}
 
 
 
 
+ const trackNumberClient = document.getElementById('track-number-client')
 
 
 

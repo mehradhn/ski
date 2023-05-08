@@ -1,0 +1,51 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+    <div class="module">
+        <table id="result_list">
+            <thead>
+                <tr>
+                    <th>{{ schedule._meta.get_field('doctor').verbose_name }}</th>
+                    <th>{{ schedule._meta.get_field('day_of_week').verbose_name }}</th>
+                    <th>{{ schedule._meta.get_field('time_slots').verbose_name }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for schedule in cl.result_list %}
+                    {% if forloop.first or schedule.doctor != cl.result_list|slice:forloop.counter0|prev:0.doctor %}
+                        {% if forloop.first %}
+                            {% with merged_days|first as merged_day %}
+                                {% include "admin/doctor_schedule/merged_day_row.html" with doctor=schedule.doctor day_of_week=merged_day.1 num_schedules=merged_day.2 %}
+                            {% endwith %}
+                        {% else %}
+                            {% with merged_days|slice:forloop.counter0|prev:0 as prev_day %}
+                                {% with merged_days|slice:forloop.counter0 as curr_day %}
+                                    {% if prev_day.0 != curr_day.0 %}
+                                        {% with curr_day as merged_day %}
+                                            {% include "admin/doctor_schedule/merged_day_row.html" with doctor=schedule.doctor day_of_week=merged_day.1 num_schedules=merged_day.2 %}
+                                        {% endwith %}
+                                    {% endif %}
+                                {% endwith %}
+                            {% endwith %}
+                        {% endif %}
+                    {% endif %}
+                    <tr class="row1{% if forloop.counter|divisibleby:2 %} row2{% endif %}">
+                        <td>{{ schedule.doctor }}</td>
+                        <td>{{ schedule.get_day_of_week }}</td>
+                        <td>{{ schedule.time_slots.all|join:", " }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .merged-day-row {
+            font-weight: bold;
+            background-color: #f7f7f7;
+        }
+    </style>
+{% endblock %}
