@@ -120,6 +120,21 @@ def create_appointment(request):
 
 
 
+def get_appointment_data(request):
+    if request.method == 'GET':
+        tracking_number = request.GET.get('tracking_number')
+        try:
+            appointment = Appointment.objects.get(tracking_number=tracking_number)
+            data = {
+                'day': appointment.get_day_display(),
+                'doctor': str(appointment.doctor),
+                'time_slot': str(appointment.time_slot),
+            }
+            return JsonResponse({'data': data})
+        except Appointment.DoesNotExist:
+            return JsonResponse({'error': 'Invalid tracking number'})
+
+    return JsonResponse({'error': 'Invalid request method'})
 
 def track_number(request):
     return render(request, 'pages/track.html', {})

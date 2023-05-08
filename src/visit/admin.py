@@ -19,7 +19,7 @@ class WeeklyScheduleAdmin(admin.ModelAdmin):
    
 class DoctorAdmin(admin.ModelAdmin):
     list_display = ('image_tag', 'first_name', 'last_name', 'medical_education_number', 'speciality',)
-    list_filter = ('speciality',)
+
 
     def export_as_pdf(self, request, queryset):
         # Generate the PDF file using the queryset
